@@ -551,13 +551,13 @@
     </div>
 
     <!-- Tabs -->
-    <div class="tabs hidden" id="tabs">
-      <button class="tab active" data-tab="analysis">Analysis</button>
-      <button class="tab" data-tab="history">History</button>
+    <div class="tabs" id="tabs">
+      <button class="tab" data-tab="analysis">Analysis</button>
+      <button class="tab active" data-tab="history">History</button>
     </div>
 
     <!-- Analysis Tab Content -->
-    <div id="analysisContent" class="tab-content">
+    <div id="analysisContent" class="tab-content hidden">
       <!-- Summary -->
       <div class="analysis-section hidden" id="summarySection">
         <div class="section-header">
@@ -578,7 +578,7 @@
     </div>
 
     <!-- History Tab Content -->
-    <div id="historyContent" class="tab-content hidden">
+    <div id="historyContent" class="tab-content">
       <button class="clear-history" id="clearHistory">Clear History</button>
       <div id="historyList"></div>
     </div>
