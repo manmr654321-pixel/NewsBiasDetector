@@ -30,7 +30,7 @@ const historyList = document.getElementById('historyList');
 const clearHistoryBtn = document.getElementById('clearHistory');
 
 // Tab management
-let currentTab = 'analysis';
+let currentTab = 'history'; // Changed from 'analysis' to 'history'
 const analysisContent = document.getElementById('analysisContent');
 const historyContent = document.getElementById('historyContent');
 
