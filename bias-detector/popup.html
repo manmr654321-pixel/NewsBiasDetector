@@ -5,43 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TruthDetector</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
     body {
       width: 420px;
       max-height: 600px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: #F9FAFB;
       color: #1F2937;
       overflow-y: auto;
-      overflow-x: hidden;
     }
+    
+    body::-webkit-scrollbar { width: 8px; }
+    body::-webkit-scrollbar-track { background: #F3F4F6; }
+    body::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 4px; }
 
-    /* Custom scrollbar */
-    body::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    body::-webkit-scrollbar-track {
-      background: #F3F4F6;
-    }
-
-    body::-webkit-scrollbar-thumb {
-      background: #D1D5DB;
-      border-radius: 4px;
-    }
-
-    body::-webkit-scrollbar-thumb:hover {
-      background: #9CA3AF;
-    }
-
-    /* Header */
     .header {
-      background: #2563EB;
+      background: #3B82F6;
       color: white;
       padding: 16px 20px;
       display: flex;
@@ -49,495 +29,111 @@
       align-items: center;
     }
 
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .header-icon { width: 24px; height: 24px; border: 2px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+    .header-title h1 { font-size: 16px; font-weight: 600; margin-bottom: 2px; }
+    .header-title p { font-size: 11px; opacity: 0.9; }
+    .header-actions { display: flex; gap: 8px; }
+    .icon-btn { background: rgba(255, 255, 255, 0.2); border: none; color: white; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+    .icon-btn:hover { background: rgba(255, 255, 255, 0.3); }
 
-    .header-icon {
-      width: 24px;
-      height: 24px;
-      border: 2px solid white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-    }
+    .api-section { background: white; padding: 16px 20px; border-bottom: 1px solid #E5E7EB; }
+    .api-section.hidden { display: none; }
+    .api-input-wrapper { display: flex; gap: 8px; margin-top: 8px; }
+    input[type="text"] { flex: 1; padding: 8px 12px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 13px; }
+    input[type="text"]:focus { outline: none; border-color: #3B82F6; }
+    .save-btn { padding: 8px 16px; background: #3B82F6; color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; }
+    .save-btn:hover { background: #2563EB; }
 
-    .header-title h1 {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 2px;
-    }
+    .content { padding: 16px 20px; }
+    
+    .status { padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 12px; display: none; }
+    .status.success { background: #D1FAE5; color: #065F46; display: block; }
+    .status.error { background: #FEE2E2; color: #991B1B; display: block; }
+    .status.info { background: #DBEAFE; color: #1E40AF; display: block; }
 
-    .header-title p {
-      font-size: 11px;
-      opacity: 0.9;
-    }
+    .analyze-btn { width: 100%; padding: 12px; background: #3B82F6; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 12px; transition: all 0.2s; }
+    .analyze-btn:hover { background: #2563EB; }
+    .analyze-btn:disabled { background: #9CA3AF; cursor: not-allowed; }
 
-    .header-actions {
-      display: flex;
-      gap: 8px;
-    }
+    .loading { text-align: center; padding: 30px 20px; display: none; }
+    .spinner { border: 3px solid #E5E7EB; border-top: 3px solid #3B82F6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .loading-text { font-size: 13px; color: #6B7280; margin-top: 10px; }
 
-    .icon-btn {
-      background: rgba(255, 255, 255, 0.2);
-      border: none;
-      color: white;
-      width: 32px;
-      height: 32px;
-      border-radius: 6px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s;
-    }
-
-    .icon-btn:hover {
-      background: rgba(255, 255, 255, 0.3);
-    }
-
-    /* API Key Section */
-    .api-section {
-      background: white;
-      padding: 16px 20px;
-      border-bottom: 1px solid #E5E7EB;
-    }
-
-    .api-section.hidden {
-      display: none;
-    }
-
-    .api-input-wrapper {
-      display: flex;
-      gap: 8px;
-      margin-top: 8px;
-    }
-
-    input[type="text"] {
-      flex: 1;
-      padding: 8px 12px;
-      border: 1px solid #D1D5DB;
-      border-radius: 6px;
-      font-size: 13px;
-    }
-
-    input[type="text"]:focus {
-      outline: none;
-      border-color: #2563EB;
-    }
-
-    .save-btn {
-      padding: 8px 16px;
-      background: #2563EB;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-    }
-
-    .save-btn:hover {
-      background: #1D4ED8;
-    }
-
-    /* Main Content */
-    .content {
-      padding: 16px 20px;
-    }
-
-    /* Score Section */
-    .score-section {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 12px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-
-    .score-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-
-    .score-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-      color: #6B7280;
-      font-weight: 500;
-    }
-
-    .reliability-badge {
-      padding: 4px 12px;
-      border-radius: 12px;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-
+    .score-section { background: white; border-radius: 12px; padding: 20px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
+    .score-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .score-label { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #6B7280; font-weight: 500; }
+    .reliability-badge { padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
     .badge-high { background: #10B981; color: white; }
     .badge-medium { background: #DC2626; color: white; }
     .badge-low { background: #EF4444; color: white; }
+    
+    .score-display { text-align: center; margin-bottom: 16px; }
+    .score-number { font-size: 56px; font-weight: 700; color: #F59E0B; line-height: 1; }
+    .score-total { font-size: 20px; color: #9CA3AF; }
+    
+    .metadata { display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid #F3F4F6; }
+    .metadata-item { flex: 1; }
+    .metadata-label { font-size: 12px; color: #6B7280; margin-bottom: 4px; }
+    .metadata-value { font-size: 14px; font-weight: 500; color: #1F2937; }
+    .neutral-badge { background: #E5E7EB; color: #4B5563; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
 
-    .score-display {
-      text-align: center;
-      margin-bottom: 12px;
-    }
+    .tabs { display: flex; gap: 8px; margin-bottom: 16px; background: white; padding: 8px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
+    .tab { flex: 1; padding: 8px 16px; background: transparent; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; color: #6B7280; cursor: pointer; transition: all 0.2s; }
+    .tab.active { background: #F3F4F6; color: #1F2937; }
 
-    .score-number {
-      font-size: 56px;
-      font-weight: 700;
-      color: #F59E0B;
-      line-height: 1;
-    }
+    .analysis-section { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); max-height: 300px; overflow-y: auto; }
+    .analysis-section::-webkit-scrollbar { width: 6px; }
+    .analysis-section::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 3px; }
+    
+    .section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; cursor: pointer; }
+    .section-icon { font-size: 16px; }
+    .section-title { font-size: 14px; font-weight: 600; color: #1F2937; flex: 1; }
+    .section-content { font-size: 13px; line-height: 1.6; color: #4B5563; }
 
-    .score-total {
-      font-size: 20px;
-      color: #9CA3AF;
-    }
+    .cross-ref-summary { font-size: 13px; color: #6B7280; margin-bottom: 12px; }
+    .verification-stats { display: flex; gap: 16px; margin-bottom: 12px; font-size: 12px; }
+    .stat-item { display: flex; align-items: center; gap: 6px; }
+    .stat-verified { color: #10B981; }
+    .stat-contradicted { color: #EF4444; }
+    .corroboration-score-header { font-size: 12px; color: #6B7280; margin-bottom: 4px; }
+    .corroboration-score-value { font-size: 18px; font-weight: 600; color: #EF4444; margin-bottom: 8px; }
+    .corroboration-note { font-size: 11px; color: #8B5CF6; font-style: italic; }
+    .related-articles-header { font-size: 13px; font-weight: 600; color: #1F2937; margin: 16px 0 8px 0; }
 
-    .heuristic-baseline {
-      text-align: center;
-      font-size: 13px;
-      color: #6B7280;
-      margin-bottom: 16px;
-    }
+    .corroboration-item { padding: 10px 12px; background: #F9FAFB; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid #D1D5DB; }
+    .corroboration-item.verified { border-left-color: #10B981; }
+    .corroboration-item.contradicted { border-left-color: #EF4444; }
+    .corroboration-item.partial { border-left-color: #F59E0B; }
+    
+    .corroboration-header { display: flex; align-items: start; gap: 8px; margin-bottom: 6px; }
+    .corroboration-icon { font-size: 14px; margin-top: 1px; flex-shrink: 0; }
+    .corroboration-title { font-size: 13px; font-weight: 500; color: #1F2937; flex: 1; line-height: 1.4; }
+    .corroboration-badge { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+    .badge-contradicts { background: #FEE2E2; color: #991B1B; }
+    .badge-supports { background: #D1FAE5; color: #065F46; }
+    .badge-partial { background: #FEF3C7; color: #92400E; }
+    .corroboration-url { font-size: 11px; color: #3B82F6; text-decoration: none; display: block; margin-bottom: 6px; word-break: break-all; }
 
-    .metadata {
-      display: flex;
-      justify-content: space-between;
-      padding-top: 12px;
-      border-top: 1px solid #F3F4F6;
-    }
-
-    .metadata-item {
-      flex: 1;
-    }
-
-    .metadata-label {
-      font-size: 12px;
-      color: #6B7280;
-      margin-bottom: 4px;
-    }
-
-    .metadata-value {
-      font-size: 14px;
-      font-weight: 500;
-      color: #1F2937;
-    }
-
-    .neutral-badge {
-      background: #E5E7EB;
-      color: #4B5563;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 500;
-    }
-
-    /* Tabs */
-    .tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 16px;
-      background: white;
-      padding: 8px;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-
-    .tab {
-      flex: 1;
-      padding: 8px 16px;
-      background: transparent;
-      border: none;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 500;
-      color: #6B7280;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .tab.active {
-      background: #F3F4F6;
-      color: #1F2937;
-    }
-
-    /* Analysis Sections */
-    .analysis-section {
-      background: white;
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      max-height: 300px;
-      overflow-y: auto;
-    }
-
-    .analysis-section::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    .analysis-section::-webkit-scrollbar-track {
-      background: #F9FAFB;
-    }
-
-    .analysis-section::-webkit-scrollbar-thumb {
-      background: #D1D5DB;
-      border-radius: 3px;
-    }
-
-    .section-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 12px;
-      cursor: pointer;
-    }
-
-    .section-icon {
-      font-size: 16px;
-    }
-
-    .section-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: #1F2937;
-      flex: 1;
-    }
-
-    .section-content {
-      font-size: 13px;
-      line-height: 1.6;
-      color: #4B5563;
-    }
-
-    .section-content ul {
-      margin: 8px 0;
-      padding-left: 20px;
-    }
-
-    .section-content li {
-      margin: 4px 0;
-    }
-
-    /* Corroboration */
-    .corroboration-item {
-      padding: 12px;
-      background: #F9FAFB;
-      border-radius: 8px;
-      margin-bottom: 8px;
-    }
-
-    .corroboration-header {
-      display: flex;
-      align-items: start;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-
-    .corroboration-icon {
-      font-size: 12px;
-      margin-top: 2px;
-    }
-
-    .corroboration-title {
-      font-size: 13px;
-      font-weight: 500;
-      color: #1F2937;
-      flex: 1;
-    }
-
-    .corroboration-url {
-      font-size: 11px;
-      color: #2563EB;
-      text-decoration: none;
-      display: block;
-      margin-bottom: 6px;
-      word-break: break-all;
-    }
-
-    .corroboration-score {
-      font-size: 12px;
-      color: #6B7280;
-    }
-
-    .score-value {
-      font-weight: 600;
-      color: #F59E0B;
-    }
-
-    /* History */
-    .history-item {
-      background: white;
-      border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    }
-
-    .history-item:hover {
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-      transform: translateX(2px);
-    }
-
-    #historyList {
-      max-height: 400px;
-      overflow-y: auto;
-    }
-
-    #historyList::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    #historyList::-webkit-scrollbar-track {
-      background: #F9FAFB;
-    }
-
-    #historyList::-webkit-scrollbar-thumb {
-      background: #D1D5DB;
-      border-radius: 3px;
-    }
-
-    .history-time {
-      font-size: 11px;
-      color: #9CA3AF;
-      margin-bottom: 6px;
-    }
-
-    .history-title {
-      font-size: 13px;
-      font-weight: 500;
-      color: #1F2937;
-      margin-bottom: 6px;
-    }
-
-    .history-scores {
-      display: flex;
-      gap: 12px;
-      font-size: 11px;
-      color: #6B7280;
-    }
-
-    .history-score-item {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    /* Analyze Button */
-    .analyze-btn {
-      width: 100%;
-      padding: 12px;
-      background: #2563EB;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-bottom: 12px;
-      transition: all 0.2s;
-    }
-
-    .analyze-btn:hover {
-      background: #1D4ED8;
-    }
-
-    .analyze-btn:disabled {
-      background: #9CA3AF;
-      cursor: not-allowed;
-    }
-
-    /* Status Messages */
-    .status {
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 13px;
-      margin-bottom: 12px;
-      display: none;
-    }
-
-    .status.success {
-      background: #D1FAE5;
-      color: #065F46;
-      display: block;
-    }
-
-    .status.error {
-      background: #FEE2E2;
-      color: #991B1B;
-      display: block;
-    }
-
-    .status.info {
-      background: #DBEAFE;
-      color: #1E40AF;
-      display: block;
-    }
-
-    /* Loading */
-    .loading {
-      text-align: center;
-      padding: 30px 20px;
-      display: none;
-    }
-
-    .spinner {
-      border: 3px solid #E5E7EB;
-      border-top: 3px solid #2563EB;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 16px;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    .loading-text {
-      font-size: 13px;
-      color: #6B7280;
-    }
-
-    /* Utility */
-    .hidden {
-      display: none !important;
-    }
-
-    .clear-history {
-      padding: 8px 16px;
-      background: #EF4444;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 500;
-      cursor: pointer;
-      margin-bottom: 12px;
-    }
-
-    .clear-history:hover {
-      background: #DC2626;
-    }
+    #historyList { max-height: 400px; overflow-y: auto; }
+    #historyList::-webkit-scrollbar { width: 6px; }
+    #historyList::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 3px; }
+    
+    .history-item { background: white; border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); }
+    .history-item:hover { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); transform: translateX(2px); }
+    .history-time { font-size: 11px; color: #9CA3AF; margin-bottom: 6px; }
+    .history-title { font-size: 13px; font-weight: 500; color: #1F2937; margin-bottom: 6px; }
+    .history-scores { display: flex; gap: 12px; font-size: 11px; color: #6B7280; }
+    .history-score-item { display: flex; align-items: center; gap: 4px; }
+    
+    .clear-history { padding: 8px 16px; background: #EF4444; color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; margin-bottom: 12px; }
+    .clear-history:hover { background: #DC2626; }
+    
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
-  <!-- Header -->
   <div class="header">
     <div class="header-left">
       <div class="header-icon">🛡️</div>
@@ -552,7 +148,6 @@
     </div>
   </div>
 
-  <!-- API Key Section -->
   <div class="api-section" id="apiSection">
     <div style="font-size: 13px; font-weight: 500; margin-bottom: 4px;">Gemini API Key</div>
     <div class="api-input-wrapper">
@@ -561,21 +156,15 @@
     </div>
   </div>
 
-  <!-- Main Content -->
   <div class="content">
-    <!-- Status -->
     <div id="status" class="status"></div>
-
-    <!-- Analyze Button -->
     <button class="analyze-btn" id="analyzeBtn">Analyze Current Page</button>
 
-    <!-- Loading -->
     <div class="loading" id="loading">
       <div class="spinner"></div>
       <div class="loading-text">Analyzing article credibility...</div>
     </div>
 
-    <!-- Score Section -->
     <div class="score-section hidden" id="scoreSection">
       <div class="score-header">
         <div class="score-label">
@@ -603,15 +192,12 @@
       </div>
     </div>
 
-    <!-- Tabs -->
     <div class="tabs" id="tabs">
-      <button class="tab" data-tab="analysis">Analysis</button>
-      <button class="tab active" data-tab="history">History</button>
+      <button class="tab active" data-tab="analysis">Analysis</button>
+      <button class="tab" data-tab="history">History</button>
     </div>
 
-    <!-- Analysis Tab Content -->
-    <div id="analysisContent" class="tab-content hidden">
-      <!-- Summary -->
+    <div id="analysisContent" class="tab-content">
       <div class="analysis-section hidden" id="summarySection">
         <div class="section-header">
           <span class="section-icon">📝</span>
@@ -620,18 +206,24 @@
         <div class="section-content" id="summaryText"></div>
       </div>
 
-      <!-- Cross-Reference -->
       <div class="analysis-section hidden" id="crossRefSection">
         <div class="section-header">
           <span class="section-icon">🔍</span>
           <span class="section-title">Cross-Reference Analysis</span>
         </div>
-        <div class="section-content" id="crossRefContent"></div>
+        <div class="section-content">
+          <div class="cross-ref-summary" id="crossRefSummary"></div>
+          <div class="verification-stats" id="verificationStats"></div>
+          <div class="corroboration-score-header">Corroboration Score:</div>
+          <div class="corroboration-score-value" id="corroborationScore">30/100</div>
+          <div class="corroboration-note" id="corroborationNote">Significant contradictions found</div>
+          <div class="related-articles-header">Related Articles:</div>
+          <div id="crossRefContent"></div>
+        </div>
       </div>
     </div>
 
-    <!-- History Tab Content -->
-    <div id="historyContent" class="tab-content">
+    <div id="historyContent" class="tab-content hidden">
       <button class="clear-history" id="clearHistory">Clear History</button>
       <div id="historyList"></div>
     </div>
