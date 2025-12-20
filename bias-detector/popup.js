@@ -30,7 +30,7 @@ const historyList = document.getElementById('historyList');
 const clearHistoryBtn = document.getElementById('clearHistory');
 
 // Tab management
-let currentTab = 'history'; // Changed from 'analysis' to 'history'
+let currentTab = 'analysis';
 const analysisContent = document.getElementById('analysisContent');
 const historyContent = document.getElementById('historyContent');
 
@@ -41,6 +41,10 @@ chrome.storage.sync.get(['geminiApiKey'], (result) => {
     apiSection.classList.add('hidden');
   }
 });
+
+// Initialize - show analysis tab by default
+analysisContent.classList.remove('hidden');
+historyContent.classList.add('hidden');
 
 // Settings button - toggle API section
 settingsBtn.addEventListener('click', () => {
@@ -114,6 +118,9 @@ analyzeBtn.addEventListener('click', async () => {
         // Display results
         displayResults(response.data);
         
+        // Switch to Analysis tab to show results
+        switchTab('analysis');
+        
         // Refresh history
         loadHistory();
         
@@ -133,7 +140,6 @@ function displayResults(data) {
 
   // Show sections
   scoreSection.classList.remove('hidden');
-  tabs.classList.remove('hidden');
   summarySection.classList.remove('hidden');
   crossRefSection.classList.remove('hidden');
 
@@ -155,26 +161,86 @@ function displayResults(data) {
   // Display reasoning summary
   summaryText.textContent = reasoning_summary;
 
+  // Calculate average corroboration score and stats
+  let avgCorroboration = 0;
+  let verified = 0;
+  let contradicted = 0;
+  let partial = 0;
+
+  if (corroboration_analysis && corroboration_analysis.length > 0) {
+    corroboration_analysis.forEach(source => {
+      avgCorroboration += source.corroboration_score;
+      if (source.corroboration_score >= 70) verified++;
+      else if (source.corroboration_score < 40) contradicted++;
+      else partial++;
+    });
+    avgCorroboration = Math.round(avgCorroboration / corroboration_analysis.length);
+  }
+
+  // Display verification stats
+  crossRefSummary.textContent = `Found ${corroboration_analysis?.length || 0} related articles. ${verified} corroborate, ${contradicted} contradict, and ${partial} partially support the claims.`;
+  
+  verificationStats.innerHTML = `
+    <div class="stat-item stat-verified">
+      <span>✅</span>
+      <span>${verified} verified</span>
+    </div>
+    <div class="stat-item stat-contradicted">
+      <span>❌</span>
+      <span>${contradicted} contradicted</span>
+    </div>
+  `;
+
+  // Display corroboration score
+  corroborationScore.textContent = `${avgCorroboration}/100`;
+  corroborationScore.style.color = avgCorroboration >= 70 ? '#10B981' : avgCorroboration >= 40 ? '#F59E0B' : '#EF4444';
+  
+  if (avgCorroboration >= 70) {
+    corroborationNote.textContent = 'Strong corroboration found';
+    corroborationNote.style.color = '#10B981';
+  } else if (avgCorroboration >= 40) {
+    corroborationNote.textContent = 'Mixed evidence found';
+    corroborationNote.style.color = '#F59E0B';
+  } else {
+    corroborationNote.textContent = 'Significant contradictions found';
+    corroborationNote.style.color = '#8B5CF6';
+  }
+
   // Display corroborating sources
   if (corroboration_analysis && corroboration_analysis.length > 0) {
-    let html = '<p style="margin-bottom: 12px; font-size: 13px;">Found ' + corroboration_analysis.length + ' related articles:</p>';
+    let html = '';
     
-    corroboration_analysis.forEach((source, index) => {
-      const icon = source.corroboration_score >= 70 ? '✅' : 
-                   source.corroboration_score >= 40 ? '⚠️' : '❌';
+    corroboration_analysis.forEach((source) => {
+      const score = source.corroboration_score;
+      let icon, badge, badgeText, itemClass;
+      
+      if (score >= 70) {
+        icon = '✅';
+        badge = 'badge-supports';
+        badgeText = 'corroborate';
+        itemClass = 'verified';
+      } else if (score < 40) {
+        icon = '❌';
+        badge = 'badge-contradicts';
+        badgeText = 'contradicts';
+        itemClass = 'contradicted';
+      } else {
+        icon = '⚠️';
+        badge = 'badge-partial';
+        badgeText = 'partial';
+        itemClass = 'partial';
+      }
       
       html += `
-        <div class="corroboration-item">
+        <div class="corroboration-item ${itemClass}">
           <div class="corroboration-header">
             <span class="corroboration-icon">${icon}</span>
             <span class="corroboration-title">${escapeHtml(source.title)}</span>
+            <span class="corroboration-badge ${badge}">${badgeText}</span>
           </div>
           <a href="${escapeHtml(source.source_url)}" target="_blank" class="corroboration-url">
             ${escapeHtml(source.source_url)}
           </a>
-          <div class="corroboration-score">
-            Corroboration Score: <span class="score-value">${source.corroboration_score}/100</span>
-          </div>
         </div>
       `;
     });
