@@ -51,32 +51,136 @@ async function extractArticleContent(tabId) {
       target: { tabId: tabId },
       func: () => {
         // Extract main article content
-        // Try multiple common selectors for article content
+        // Comprehensive list of selectors from major news platforms
         const selectors = [
+          // Semantic HTML5
           'article',
           '[role="article"]',
           'main article',
+          
+          // Common news site patterns
+          '.article-body',
           '.article-content',
+          '.article__body',
+          '.article__content',
+          '.story-body',
+          '.story-content',
+          '.story__body',
           '.post-content',
+          '.post-body',
+          '.post__content',
           '.entry-content',
+          '.entry-body',
+          
+          // Major news outlets
+          '.article-text',
+          '.body-content',
+          '.text-content',
+          '[itemprop="articleBody"]',
+          '.content-body',
+          '.main-content',
+          
+          // NYT specific
+          '.story-content',
+          '.StoryBodyCompanionColumn',
+          
+          // BBC patterns
+          '.story-body__inner',
+          '.ssrcss-1q0x1qg-Paragraph',
+          
+          // CNN patterns
+          '.article__content',
+          '.zn-body__paragraph',
+          
+          // Guardian patterns
+          '.article-body-commercial-selector',
+          '.content__article-body',
+          
+          // Washington Post
+          '.article-body',
+          
+          // Reuters
+          '.ArticleBody__content',
+          '.StandardArticleBody_body',
+          
+          // Fox News
+          '.article-body',
+          '.article-content',
+          
+          // NBC/MSNBC
+          '.article-body__content',
+          
+          // AP News
+          '.Article',
+          
+          // USA Today
+          '.story-body-text',
+          
+          // Bloomberg
+          '.body-copy',
+          
+          // Vice
+          '.article__body',
+          
+          // Vox
+          '.c-entry-content',
+          
+          // Buzzfeed
+          '.subbuzz-content',
+          
+          // Medium
+          'article section',
+          '.postArticle-content',
+          
+          // WordPress common themes
+          '.entry-content',
+          '.post-entry',
+          '.the-content',
+          
+          // Generic fallbacks
           'main',
-          '.content'
+          '.content',
+          '#content',
+          '.main',
+          '#main'
         ];
 
         let articleText = '';
+        let bestMatch = null;
+        let maxLength = 0;
 
+        // Try each selector and keep the one with the most text
         for (const selector of selectors) {
-          const element = document.querySelector(selector);
-          if (element) {
-            articleText = element.innerText;
-            break;
+          try {
+            const element = document.querySelector(selector);
+            if (element) {
+              const text = element.innerText || element.textContent;
+              if (text && text.trim().length > maxLength) {
+                maxLength = text.trim().length;
+                bestMatch = text;
+              }
+              // If we found substantial content (>500 chars), use it
+              if (maxLength > 500) {
+                articleText = bestMatch;
+                break;
+              }
+            }
+          } catch (e) {
+            // Skip invalid selectors
+            continue;
           }
         }
 
-        // Fallback to body if nothing found
-        if (!articleText || articleText.trim().length < 100) {
-          articleText = document.body.innerText;
+        // Fallback to body if nothing substantial found
+        if (!articleText || articleText.trim().length < 200) {
+          articleText = document.body.innerText || document.body.textContent;
         }
+
+        // Clean up the text
+        articleText = articleText
+          .replace(/\s+/g, ' ') // Normalize whitespace
+          .replace(/\n{3,}/g, '\n\n') // Remove excessive line breaks
+          .trim();
 
         // Limit to first 3000 characters to avoid token limits and ensure complete responses
         return articleText.substring(0, 3000);
@@ -92,11 +196,15 @@ async function extractArticleContent(tabId) {
 // Call Gemini API with article content
 async function callGeminiAPI(articleText, pageUrl, apiKey) {
   // Construct the API endpoint with API key as query parameter
-  // Using gemini-2.5-flash which is the latest stable model with free tier
+  // Using gemini-2.5-flash which has a generous free tier (1,500 requests/day)
   const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
   // Create the prompt that instructs JSON output
-  const prompt = `You are a credibility analysis expert. Analyze the following article and provide a credibility assessment.
+  const prompt = `You are a credibility analysis expert. Analyze the following article and provide a comprehensive credibility assessment.
+
+CURRENT DATE: December 19, 2025
+
+IMPORTANT CONTEXT: Donald Trump won the 2024 U.S. Presidential Election and was inaugurated as the 47th President on January 20, 2025. When evaluating articles, consider this current reality.
 
 Article URL: ${pageUrl}
 
@@ -110,23 +218,31 @@ CRITICAL INSTRUCTIONS:
 4. Ensure all strings are properly escaped (use \\\\ for backslashes, \\" for quotes)
 5. Do not include line breaks within string values
 
+IMPORTANT: Your credibility_score must factor in BOTH the article's inherent quality AND how well it's corroborated by other sources. The corroboration_score for each source should reflect how well that source supports or contradicts the article's claims. Your overall credibility_score should be influenced by the corroboration scores - strong corroboration should increase the score, weak corroboration or contradictions should decrease it.
+
 Required JSON schema:
 {
   "credibility_score": <integer 0-100>,
-  "reasoning_summary": "<concise explanation>",
+  "reasoning_summary": "<concise explanation that mentions both article quality and corroboration>",
   "confidence": <integer 0-100>,
   "political_leaning": "<one of: Left, Center-Left, Center, Center-Right, Right, or Neutral>",
   "corroboration_analysis": [
     {
       "title": "<source title>",
       "source_url": "<valid URL>",
-      "corroboration_score": <integer 0-100>
+      "corroboration_score": <integer 0-100 reflecting how well this source corroborates the article>
     }
   ]
 }
 
-Evaluate based on: source reliability, citations, writing quality, objectivity, logical consistency.
-Provide 2-3 corroborating sources. Return ONLY the JSON object with no other text.`;
+Evaluation criteria:
+1. Source reliability and reputation (30%)
+2. Quality of evidence and citations (20%)
+3. Writing quality and objectivity (15%)
+4. Logical consistency (15%)
+5. Corroboration by other credible sources (20%) - CRITICAL: Find and analyze 2-3 sources that discuss the same topic and score how well they support or contradict the article's claims
+
+Provide 2-3 corroborating sources with individual scores. Return ONLY the JSON object.`;
 
   // Construct request body for Gemini API
   const requestBody = {
