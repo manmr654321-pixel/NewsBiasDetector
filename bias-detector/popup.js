@@ -88,7 +88,6 @@ analyzeBtn.addEventListener('click', async () => {
   // Show loading state
   loadingDiv.style.display = 'block';
   scoreSection.classList.add('hidden');
-  tabs.classList.add('hidden');
   summarySection.classList.add('hidden');
   crossRefSection.classList.add('hidden');
   analyzeBtn.disabled = true;
@@ -142,6 +141,7 @@ function displayResults(data) {
   scoreSection.classList.remove('hidden');
   summarySection.classList.remove('hidden');
   crossRefSection.classList.remove('hidden');
+  tabs.classList.remove('hidden');
 
   // Update score
   scoreNumber.textContent = credibility_score;
