@@ -197,7 +197,8 @@ async function extractArticleContent(tabId) {
 async function callGeminiAPI(articleText, pageUrl, apiKey) {
   // Construct the API endpoint with API key as query parameter
   // Using gemini-2.5-flash which has a generous free tier (1,500 requests/day)
-  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent?key=${apiKey}`; 
+
 
   // Create the prompt that instructs JSON output
   const prompt = `You are a credibility analysis expert. Analyze the following article and provide a comprehensive credibility assessment.
