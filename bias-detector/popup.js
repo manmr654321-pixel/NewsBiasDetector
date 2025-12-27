@@ -11,6 +11,9 @@ const tabs = document.getElementById('tabs');
 const settingsBtn = document.getElementById('settingsBtn');
 const collapseBtn = document.getElementById('collapseBtn');
 const apiSection = document.getElementById('apiSection');
+const showGuideLink = document.getElementById('showGuideLink');
+const closeGuideBtn = document.getElementById('closeGuideBtn');
+const apiGuide = document.getElementById('apiGuide');
 
 // Score elements
 const scoreNumber = document.getElementById('scoreNumber');
@@ -54,6 +57,16 @@ settingsBtn.addEventListener('click', () => {
 // Collapse button
 collapseBtn.addEventListener('click', () => {
   window.close();
+});
+
+// Show/hide API guide
+showGuideLink.addEventListener('click', (e) => {
+  e.preventDefault();
+  apiGuide.classList.toggle('hidden');
+});
+
+closeGuideBtn.addEventListener('click', () => {
+  apiGuide.classList.add('hidden');
 });
 
 // Save API key
