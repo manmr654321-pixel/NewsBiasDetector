@@ -20,7 +20,6 @@ const scoreNumber = document.getElementById('scoreNumber');
 const reliabilityBadge = document.getElementById('reliabilityBadge');
 const heuristicBaseline = document.getElementById('heuristicBaseline');
 const politicalLeaning = document.getElementById('politicalLeaning');
-const confidence = document.getElementById('confidence');
 
 // Analysis sections
 const summarySection = document.getElementById('summarySection');
@@ -60,14 +59,18 @@ collapseBtn.addEventListener('click', () => {
 });
 
 // Show/hide API guide
-showGuideLink.addEventListener('click', (e) => {
-  e.preventDefault();
-  apiGuide.classList.toggle('hidden');
-});
+if (showGuideLink) {
+  showGuideLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    apiGuide.classList.toggle('hidden');
+  });
+}
 
-closeGuideBtn.addEventListener('click', () => {
-  apiGuide.classList.add('hidden');
-});
+if (closeGuideBtn) {
+  closeGuideBtn.addEventListener('click', () => {
+    apiGuide.classList.add('hidden');
+  });
+}
 
 // Save API key
 saveApiKeyBtn.addEventListener('click', () => {
@@ -148,7 +151,7 @@ analyzeBtn.addEventListener('click', async () => {
 
 // Display analysis results
 function displayResults(data) {
-  const { credibility_score, reasoning_summary, corroboration_analysis, confidence, political_leaning } = data;
+  const { credibility_score, reasoning_summary, corroboration_analysis, political_leaning } = data;
 
   // Show sections
   scoreSection.classList.remove('hidden');
@@ -263,9 +266,8 @@ function displayResults(data) {
     crossRefContent.innerHTML = '<p style="color: #9CA3AF; font-size: 13px;">No corroborating sources found</p>';
   }
 
-  // Update metadata with real values from API
+  // Update metadata with real values from API (removed confidence)
   politicalLeaning.textContent = political_leaning || 'Neutral';
-  confidence.textContent = confidence ? confidence + '%' : '75%';
 }
 
 // Tab switching
