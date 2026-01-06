@@ -73,8 +73,8 @@
     .score-number { font-size: 56px; font-weight: 700; color: #F59E0B; line-height: 1; }
     .score-total { font-size: 20px; color: #9CA3AF; }
     
-    .metadata { display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid #F3F4F6; }
-    .metadata-item { flex: 1; }
+    .metadata { display: flex; justify-content: center; padding-top: 12px; border-top: 1px solid #F3F4F6; }
+    .metadata-item { flex: 1; text-align: center; }
     .metadata-label { font-size: 12px; color: #6B7280; margin-bottom: 4px; }
     .metadata-value { font-size: 14px; font-weight: 500; color: #1F2937; }
     .neutral-badge { background: #E5E7EB; color: #4B5563; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
@@ -185,14 +185,10 @@
             <span class="neutral-badge" id="politicalLeaning">Neutral</span>
           </div>
         </div>
-        <div class="metadata-item" style="text-align: right;">
-          <div class="metadata-label">Confidence:</div>
-          <div class="metadata-value" id="confidence">75%</div>
-        </div>
       </div>
     </div>
 
-    <div class="tabs" id="tabs">
+    <div class="tabs hidden" id="tabs">
       <button class="tab active" data-tab="analysis">Analysis</button>
       <button class="tab" data-tab="history">History</button>
     </div>
@@ -200,7 +196,7 @@
     <div id="analysisContent" class="tab-content">
       <div class="analysis-section hidden" id="summarySection">
         <div class="section-header">
-          <span class="section-icon">📝</span>
+          <span class="section-icon">📋</span>
           <span class="section-title">AI Summary</span>
         </div>
         <div class="section-content" id="summaryText"></div>
