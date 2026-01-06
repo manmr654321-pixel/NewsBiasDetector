@@ -195,22 +195,32 @@ async function extractArticleContent(tabId) {
 
 // Call Gemini API with article content
 async function callGeminiAPI(articleText, pageUrl, apiKey) {
-  // Construct the API endpoint with API key as query parameter
-  // Using gemini-2.5-flash which has a generous free tier (1,500 requests/day)
-  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent?key=${apiKey}`; 
+  // Using Gemini 3 Flash with thinking mode
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent?key=${apiKey}`; 
 
 
-  // Create the prompt that instructs JSON output
-  const prompt = `You are a credibility analysis expert. Analyze the following article and provide a comprehensive credibility assessment.
+  // Create the prompt with structured evaluation steps
+  const prompt = `You are a credibility analysis expert performing a structured evaluation. Give a final credibility_score that includes all the factors of the five steps after analyzing.
 
-CURRENT DATE: December 19, 2025
+CURRENT DATE: January 3, 2026
 
-IMPORTANT CONTEXT: Donald Trump won the 2024 U.S. Presidential Election and was inaugurated as the 47th President on January 20, 2025. When evaluating articles, consider this current reality.
+Pull relevant and recent information only to verify claims and find corroborating sources.
 
 Article URL: ${pageUrl}
 
 Article Content:
 ${articleText}
+
+Analyze the article strictly in the following order and do not skip any step internally, and be conservative:
+
+1. Source reliability - Score out of 100
+2. Evidence and citations - Score out of 100
+3. Writing quality and professionalism - Score out of 100
+4. Objectivity and bias indicators - Score out of 100
+5. Logical consistency and factual coherence - Score out of 100
+6. Political lean
+
+After completing all steps, calculate a final credibility_score (0-100) that weighs all factors.
 
 CRITICAL INSTRUCTIONS:
 1. Respond with ONLY a valid JSON object
@@ -219,13 +229,10 @@ CRITICAL INSTRUCTIONS:
 4. Ensure all strings are properly escaped (use \\\\ for backslashes, \\" for quotes)
 5. Do not include line breaks within string values
 
-IMPORTANT: Your credibility_score must factor in BOTH the article's inherent quality AND how well it's corroborated by other sources. The corroboration_score for each source should reflect how well that source supports or contradicts the article's claims. Your overall credibility_score should be influenced by the corroboration scores - strong corroboration should increase the score, weak corroboration or contradictions should decrease it.
-
 Required JSON schema:
 {
-  "credibility_score": <integer 0-100>,
-  "reasoning_summary": "<concise explanation that mentions both article quality and corroboration>",
-  "confidence": <integer 0-100>,
+  "credibility_score": <integer 0-100, conservative final score after all steps>,
+  "reasoning_summary": "<concise explanation that references your evaluation across all 6 steps>",
   "political_leaning": "<one of: Left, Center-Left, Center, Center-Right, Right, or Neutral>",
   "corroboration_analysis": [
     {
@@ -236,16 +243,9 @@ Required JSON schema:
   ]
 }
 
-Evaluation criteria:
-1. Source reliability and reputation (30%)
-2. Quality of evidence and citations (20%)
-3. Writing quality and objectivity (15%)
-4. Logical consistency (15%)
-5. Corroboration by other credible sources (20%) - CRITICAL: Find and analyze 2-3 sources that discuss the same topic and score how well they support or contradict the article's claims
+Find 2-3 corroborating sources that discuss the same topic and score how well they support or contradict the article's claims. Return ONLY the JSON object.`;
 
-Provide 2-3 corroborating sources with individual scores. Return ONLY the JSON object.`;
-
-  // Construct request body for Gemini API
+  // Construct request body for Gemini API with new settings
   const requestBody = {
     contents: [
       {
@@ -257,8 +257,20 @@ Provide 2-3 corroborating sources with individual scores. Return ONLY the JSON o
       }
     ],
     generationConfig: {
-      temperature: 0.3,
-      maxOutputTokens: 4096, // Increased from 2048 to allow longer responses
+      temperature: 0.15, // Changed from 0.3 to 0.15 for more consistent output
+      maxOutputTokens: 4096
+    },
+    tools: [
+      {
+        googleSearch: {} // Enable grounding with Google Search
+      }
+    ],
+    systemInstruction: {
+      parts: [
+        {
+          text: "You are a credibility analysis expert. Use web search to verify facts and find corroborating sources. Be thorough and conservative in your scoring."
+        }
+      ]
     }
   };
 
@@ -329,7 +341,6 @@ Provide 2-3 corroborating sources with individual scores. Return ONLY the JSON o
       }
       
       // Fix common JSON issues: replace newlines within strings with spaces
-      // This regex finds strings and replaces newlines inside them
       cleanedText = cleanedText.replace(/"[^"]*"/g, (match) => {
         return match.replace(/\n/g, ' ').replace(/\s+/g, ' ');
       });
@@ -361,8 +372,7 @@ Provide 2-3 corroborating sources with individual scores. Return ONLY the JSON o
       throw new Error('API response missing required fields (credibility_score or reasoning_summary)');
     }
 
-    // Add defaults for optional fields
-    analysisData.confidence = analysisData.confidence || 75;
+    // Add defaults for optional fields (removed confidence)
     analysisData.political_leaning = analysisData.political_leaning || 'Neutral';
     analysisData.corroboration_analysis = analysisData.corroboration_analysis || [];
 
